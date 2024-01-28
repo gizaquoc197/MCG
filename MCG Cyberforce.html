@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MCG Cyberforce</title>
+    <link rel="stylesheet" href="MCG Cyberforce.css">
+</head>
+
+<body>
+    <h1>Safe Browsing API Test</h1>
+
+    <form id="urlForm">
+        <label for="urlInput">Enter URL:</label>
+        <input type="text" id="urlInput" name="urlInput" required>
+        <button type="button" class="btn" onclick="checkUrl()">Check URL</button>
+    </form>
+
+    <div id="resultContainer">
+        <!-- Display API results here -->
+    </div>
+
+    <script>
+        // Replace 'YOUR_API_KEY' with your actual API key
+        const apiKey = 'AIzaSyD15HO4e-_237YMr3L_bkH2Lx9esV4Po0o';
+
+        // Safe Browsing API endpoint
+        const apiUrl = `https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${apiKey}`;
+
+        function checkUrl() {
+            const urlInput = document.getElementById('urlInput').value;
+
+            // Example data for threatMatches.find request
+            const requestData = {
+                "client": {
+                    "clientId": "yourcompanyname",
+                    "clientVersion": "1.5.2"
+                },
+                "threatInfo": {
+                    "threatTypes": ["MALWARE", "SOCIAL_ENGINEERING"],
+                    "platformTypes": ["WINDOWS"],
+                    "threatEntryTypes": ["URL"],
+                    "threatEntries": [{
+                        "url": urlInput
+                    }]
+                }
+            };
+
+            // Send HTTP POST request to Safe Browsing API
+            fetch(apiUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestData),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // Handle the API response
+                    displayResult(data);
+                })
+                .catch(error => {
+                    // Handle errors
+                    console.error('Error:', error);
+                });
+        }
+
+        function displayResult(apiResponse) {
+            const resultContainer = document.getElementById('resultContainer');
+            resultContainer.innerHTML = ''; // Clear previous results
+
+            if (apiResponse.matches && apiResponse.matches.length > 0) {
+                resultContainer.innerHTML = '<p>WARNING!: This is a phishing URL.</p>';
+                apiResponse.matches.forEach(match => {
+                    resultContainer.innerHTML += `<p>${match.threatType} - ${match.threat.url}</p>`;
+                });
+            } else {
+                resultContainer.innerHTML = '<p>You are good to go</p>';
+            }
+        }
+    </script>
+</body>
+
+</html>
